@@ -1,0 +1,42 @@
+version: '3.3'
+services:
+  database:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: 'fly_db_admin'
+      POSTGRES_PASSWORD: 'password'
+      POSTGRES_DB: 'production'
+    networks:
+      - backend
+    ports:
+      - '5432:5433'
+    volumes:
+      - database-pg:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    depends_on:
+      - database
+    networks:
+      - backend
+    restart: always
+    ports:
+      - '3000:3000'
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 512m
+        reservations:
+          memory: 256m
+
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  database-pg:
