@@ -13,4 +13,8 @@ export class CompanyCreateDto {
   @ApiProperty()
   @IsNotEmpty()
   city: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  avatar_id: number;
 }

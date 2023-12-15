@@ -2,6 +2,8 @@ import { HttpException, Injectable } from '@nestjs/common';
 import * as AWS from 'aws-sdk';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FileUploadedDto } from './dto/file-uploaded.dto';
+import { Prisma, Image } from '@prisma/client';
+import { createHash } from 'crypto';
 
 @Injectable()
 export class StorageService {
@@ -18,29 +20,26 @@ export class StorageService {
     },
   });
 
-  async getLink(id: number): Promise<string> {
-    const candidate = await this.prisma.image.findFirstOrThrow({
-      where: {
-        id
-      }
-    }).catch(_ => { throw new HttpException('Image not found', 404) });
-
-    return null;;
+  async file(where: Prisma.ImageWhereUniqueInput) : Promise<Image> {
+    return this.prisma.image.findFirst({
+      where
+    });
   }
 
   async uploadFile(file: Express.Multer.File): Promise<FileUploadedDto> {
     const { originalname } = file;
+
+    const hashedName = createHash('md5').update(originalname).digest('hex').toString();
 
     if (file.size == 0) throw new HttpException('Empty file', 400);
 
     const s3 = await this.s3_upload(
       file.buffer,
       this.bucket,
-      originalname,
+      hashedName,
       file.mimetype,
     );
 
-    console.log(s3);
 
     const { res, uploaded } = s3;
 
@@ -57,7 +56,7 @@ export class StorageService {
 
     const db = await this.prisma.image.create({
       data: {
-        title: file.originalname,
+        title: hashedName,
         type: file.mimetype,
         size: file.size,
         url: 'http://' + this.bucket + '.' + process.env.S3_ENDPOINT_URL + '/' + file.originalname,

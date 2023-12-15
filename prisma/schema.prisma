@@ -17,7 +17,7 @@ model Image {
   title String
   type String
   url String?
-  size BigInt
+  size Int
 
   company CompanyDetails?
   user UserDetails?

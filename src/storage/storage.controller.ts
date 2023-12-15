@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  HttpException,
   Param,
   ParseIntPipe,
   Post,
@@ -39,18 +40,24 @@ export class StorageController {
     return this.storageService.uploadFile(file);
   }
 
-  @ApiOkResponse({
-    type: FileUploadedDto
-  })
-  @ApiParam({
-    name: 'id',
-    type: Number,
-  })
-  @ApiResponse({
-    type: String,
-  })
-  @Get(':id')
-  async getLink(@Param('id', ParseIntPipe) id) {
-    return this.storageService.getLink(id);
-  }
+  // @ApiOkResponse({
+  //   type: FileUploadedDto
+  // })
+  // @ApiParam({
+  //   name: 'id',
+  //   type: Number,
+  // })
+  // @ApiResponse({
+  //   type: String,
+  // })
+  // @Get(':id')
+  // async getLink(@Param('id', ParseIntPipe) id) {
+  //   const candidate = await this.storageService.file({ id });
+
+  //   if (candidate == null) {
+  //     throw new HttpException('File not found', 404);
+  //   }
+
+  //   return candidate.url;
+  // }
 }

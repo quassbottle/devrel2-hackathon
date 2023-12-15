@@ -14,6 +14,7 @@ import { CompanyModel } from './entity/company.entity';
 import { UserModel } from 'src/user/entities/user.entity';
 import { CompanyInviteModel } from './entity/invite.entity';
 import { UserService } from 'src/user/user.service';
+import { StorageService } from 'src/storage/storage.service';
 
 @ApiTags('company')
 @ApiBearerAuth('JWT-auth')
@@ -21,7 +22,8 @@ import { UserService } from 'src/user/user.service';
 export class CompanyController {
   constructor(private readonly companyService: CompanyService,
               private readonly accountService: AccountService,
-              private readonly userService: UserService) {}
+              private readonly userService: UserService,
+              private readonly storageService: StorageService) {}
   
   @ApiOkResponse({
     type: CompanyModel
@@ -187,10 +189,10 @@ export class CompanyController {
   })
   @Get('own')
   @UseGuards(AuthGuard)
-  async getOwn(@Req() req) : Promise<CompanyDetails> {
+  async getOwn(@Req() req) : Promise<CompanyModel> {
     const res = await this.companyService.company({
       account_id: req.user.sub
-    });
+    }, { avatar: true });
 
     if (res == null) {
       throw new HttpException('Company not found', 404)
@@ -207,12 +209,14 @@ export class CompanyController {
     type: Number,
   })
   @Get(':id')
-  async get(@Param('id', ParseIntPipe) id) : Promise<CompanyDetails> {
-    const res = await this.companyService.company({ id: id });
+  async get(@Param('id', ParseIntPipe) id) : Promise<CompanyModel> {
+    const res = await this.companyService.company({ id: id }, { avatar: true });
     
     if (res == null) {
       throw new HttpException('Company not found', 404)
     }
+
+    const candidate = await this.storageService.file({ id: res.avatar_id });
 
     return res;
   }
@@ -293,8 +297,8 @@ export class CompanyController {
   })
   @Post()
   @UseGuards(AuthGuard)
-  async create(@Body() create: CompanyCreateDto, @Req() req) : Promise<CompanyDetails> {
-    const { title, description, city } = create;
+  async create(@Body() create: CompanyCreateDto, @Req() req) : Promise<CompanyModel> {
+    const { title, description, city, avatar_id } = create;
     const id = req.user.sub;
 
     const candidate = await this.companyService.company({
@@ -310,7 +314,11 @@ export class CompanyController {
       data: {
         company: {
           create: {
-            title, description, city
+            title, description, city, avatar: {
+              connect: {
+                id: avatar_id
+              }
+            }
           }
         }
       },
@@ -335,8 +343,9 @@ export class CompanyController {
       }
     });
 
+    const avatar = await this.storageService.file({ id: res.company.avatar_id });
 
-    return res.company;
+    return { ...res.company, avatar: avatar };
   }
 
   @ApiOkResponse({
@@ -355,6 +364,6 @@ export class CompanyController {
     //   take: 10,
     //   skip: 10 * (page - 1)
     // })
-    return this.companyService.companies({});
+    return this.companyService.companies({ include: { avatar: true }});
   }
 }
