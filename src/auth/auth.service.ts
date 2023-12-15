@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Account, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
@@ -42,7 +42,11 @@ export class AuthService {
 
     const candidate = await this.account({
       email: email,
-    });
+    }, { user: true });
+
+    if (candidate == null) {
+      throw new HttpException('Account does not exist', 404);
+    }
 
     if (!(await bcrypt.compare(password, hash))) {
       throw new UnauthorizedException('Invalid credentials');
@@ -51,6 +55,7 @@ export class AuthService {
     const payload = { sub: candidate.id, email: candidate.email, role: candidate.role };
     
     return {
+      ...candidate.user,
       token: await this.jwtService.signAsync(payload),
     };
   }
