@@ -7,11 +7,101 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("SHADOW_DATABASE_URL")
+  //url      = env("DATABASE_URL")
 }
 
-model User {
+enum Role {
+  default
+  moderator
+  admin
+}
+
+enum Status {
+  in_progress
+  running
+  completed
+}
+
+model Account {
   id Int @id @default(autoincrement())
-  email String @unique
-  name String?
+
+  email    String @unique
+  password String
+  role     Role
+
+  user    UserDetails?
+  company CompanyDetails?
+}
+
+model UserDetails {
+  id Int @id
+
+  username String @unique
+
+  first_name  String
+  middle_name String
+  last_name   String
+
+  city String
+
+  birthdate DateTime
+
+  created_at DateTime @default(now())
+
+  account    Account @relation(references: [id], fields: [account_id], onUpdate: Cascade, onDelete: Cascade)
+  account_id Int     @unique
+
+  company    CompanyDetails? @relation(references: [id], fields: [company_id])
+  company_id Int
+
+  events Event[]
+
+  tags UserTag[]
+}
+
+model CompanyDetails {
+  id Int @id
+
+  title       String
+  description String
+
+  city String
+
+  status Status
+
+  account    Account @relation(references: [id], fields: [account_id], onUpdate: Cascade, onDelete: Cascade)
+  account_id Int     @unique
+  
+  events Event[]
+  employees UserDetails[]
+}
+
+model UserTag {
+  id Int @id
+  
+  title String
+
+  users UserDetails[]
+}
+
+model EventTag {
+  id Int @id
+
+  title String
+
+  events Event[]
+}
+
+model Event {
+  id Int @id
+
+  title String
+  description String
+
+  company CompanyDetails @relation(references: [id], fields: [company_id])
+  company_id Int
+
+  tags         EventTag[]
+  participants UserDetails[]
 }

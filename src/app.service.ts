@@ -5,7 +5,7 @@ const test = new PrismaClient();
 
 @Injectable()
 export class AppService {
-	getHello(): Promise<any> {
-		return test.user.findMany();
-	}
+  // getHello(): Promise<any> {
+  //   return test.task.findMany();
+  // }
 }
