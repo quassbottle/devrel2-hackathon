@@ -4,6 +4,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDao } from './dao/login.dao';
 import { TokenDto } from './dto/token.dto';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { ChangePasswordDao } from './dao/password.dao';
 
 @Injectable()
 export class AuthService {
@@ -12,14 +14,37 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  salt = 10;
+
+  async changePassword(id: number, dao: ChangePasswordDao) {
+    const { password } = dao;
+    
+    const hash = await bcrypt.hash(password, this.salt);
+
+    const res = await this.prisma.account.update({
+      where: {
+        id
+      },
+      data: {
+        password: hash
+      }
+    });
+    
+    return {
+      id: res.id
+    }
+  }
+
   async login(dao: LoginDao): Promise<TokenDto> {
     const { email, password } = dao;
+
+    const hash = await bcrypt.hash(password, this.salt);
 
     const candidate = await this.account({
       email: email,
     });
 
-    if (candidate.password !== password) {
+    if (!(await bcrypt.compare(password, hash))) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -31,16 +56,9 @@ export class AuthService {
   }
 
   async register(data: Prisma.AccountCreateInput): Promise<Account> {
+    const hash = await bcrypt.hash(data.password, this.salt);
 
-    /*
-  first_name  String
-  middle_name String
-  last_name   String
-
-  city String
-
-  birthdate DateTime
-    */
+    data.password = hash;
 
     return this.prisma.account.create({
       data: data
