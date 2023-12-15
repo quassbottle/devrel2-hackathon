@@ -7,8 +7,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  //url      = env("SHADOW_DATABASE_URL")
-  url      = env("DATABASE_URL")
+  url      = env("SHADOW_DATABASE_URL")
+  //url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -35,7 +35,7 @@ model Account {
 }
 
 model UserDetails {
-  id Int @id
+  id Int @id @default(autoincrement())
 
   username String @unique
 
@@ -45,7 +45,7 @@ model UserDetails {
 
   city String
 
-  birthdate DateTime
+  birthdate DateTime @db.Date
 
   created_at DateTime @default(now())
 
@@ -53,7 +53,7 @@ model UserDetails {
   account_id Int     @unique
 
   company    CompanyDetails? @relation(references: [id], fields: [company_id])
-  company_id Int
+  company_id Int?
 
   events Event[]
 
@@ -61,7 +61,7 @@ model UserDetails {
 }
 
 model CompanyDetails {
-  id Int @id
+  id Int @id @default(autoincrement())
 
   title       String
   description String
@@ -78,7 +78,7 @@ model CompanyDetails {
 }
 
 model UserTag {
-  id Int @id
+  id Int @id @default(autoincrement())
 
   title String
 
@@ -86,7 +86,7 @@ model UserTag {
 }
 
 model EventTag {
-  id Int @id
+  id Int @id @default(autoincrement())
 
   title String
 
@@ -94,7 +94,7 @@ model EventTag {
 }
 
 model Event {
-  id Int @id
+  id Int @id @default(autoincrement())
 
   title String
   description String

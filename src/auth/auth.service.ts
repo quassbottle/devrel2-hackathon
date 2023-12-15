@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Account, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AuthDao } from './dao/login.dao';
+import { LoginDao } from './dao/login.dao';
 import { TokenDto } from './dto/token.dto';
 import { JwtService } from '@nestjs/jwt';
 
@@ -12,7 +12,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async login(dao: AuthDao): Promise<TokenDto> {
+  async login(dao: LoginDao): Promise<TokenDto> {
     const { email, password } = dao;
 
     const candidate = await this.account({
@@ -31,8 +31,19 @@ export class AuthService {
   }
 
   async register(data: Prisma.AccountCreateInput): Promise<Account> {
+
+    /*
+  first_name  String
+  middle_name String
+  last_name   String
+
+  city String
+
+  birthdate DateTime
+    */
+
     return this.prisma.account.create({
-      data: data,
+      data: data
     });
   }
 

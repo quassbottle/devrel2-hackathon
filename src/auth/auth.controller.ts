@@ -1,20 +1,32 @@
 import { Body, Controller, Get, HttpException, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthDao } from './dao/login.dao';
+import { LoginDao } from './dao/login.dao';
 import { AuthGuard } from './auth.guard';
+import { RegisterDao } from './dao/register.dao';
+import { UserService } from 'src/user/user.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  async register(@Body() register: AuthDao): Promise<Record<string, any>> {
-    const { email, password } = register;
+  async register(@Body() register: RegisterDao): Promise<Record<string, any>> {
+    const { email, password, first_name, middle_name, last_name, birthdate, username, city } = register;
 
     const candidate = await this.authService.register({
-      email: email,
-      password: password,
-      role: 'default'
+      email,
+      password,
+      role: 'default',
+      user: {
+        create: {
+          first_name,
+          middle_name,
+          last_name,
+          birthdate,
+          username,
+          city
+        }
+      }
     });
 
     return {
@@ -23,7 +35,7 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() login: AuthDao): Promise<Record<string, any>> {
+  async login(@Body() login: LoginDao): Promise<Record<string, any>> {
     return this.authService.login(login);
   }
 

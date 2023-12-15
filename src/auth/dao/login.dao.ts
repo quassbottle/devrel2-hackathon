@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
 
 
-export class AuthDao {
+export class LoginDao {
   @ApiProperty()
   @IsNotEmpty()
   email: string;
