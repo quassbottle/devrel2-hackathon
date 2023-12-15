@@ -1,26 +1,60 @@
 import { Injectable } from '@nestjs/common';
-import { CreateCompanyDto } from './dto/create-company.dto';
-import { UpdateCompanyDto } from './dto/update-company.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CompanyDetails, Prisma } from '@prisma/client';
 
 @Injectable()
 export class CompanyService {
-  create(createCompanyDto: CreateCompanyDto) {
-    return 'This action adds a new company';
+  constructor (private readonly prisma: PrismaService) {}
+  
+  async create(data: Prisma.CompanyDetailsCreateInput): Promise<CompanyDetails> {
+    return this.prisma.companyDetails.create({
+      data: data,
+    });
   }
 
-  findAll() {
-    return `This action returns all company`;
+  async company(where: Prisma.CompanyDetailsWhereUniqueInput, include?: Prisma.CompanyDetailsInclude) {
+    return this.prisma.companyDetails.findUnique({
+      where: where,
+      include: include
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} company`;
+  async companies(params: {
+    skip? : number,
+    take? : number,
+    cursor? : Prisma.CompanyDetailsWhereUniqueInput,
+    where? : Prisma.CompanyDetailsWhereInput,
+    orderBy? : Prisma.CompanyDetailsOrderByWithRelationInput,
+    include? : Prisma.CompanyDetailsInclude
+  }) {
+    const { skip, take, cursor, where, orderBy, include } = params;
+    return this.prisma.companyDetails.findMany({
+      skip,
+      take,
+      cursor,
+      where,
+      orderBy,
+      include
+    })
   }
 
-  update(id: number, updateCompanyDto: UpdateCompanyDto) {
-    return `This action updates a #${id} company`;
+  async update(params: {
+    where: Prisma.CompanyDetailsWhereUniqueInput,
+    data: Prisma.CompanyDetailsUpdateInput,
+    include?: Prisma.CompanyDetailsInclude
+  }) {
+    const { data, where, include } = params;
+    return this.prisma.companyDetails.update({
+      data: data,
+      where: where,
+      include: include
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} company`;
+  async delete(where: Prisma.CompanyDetailsWhereUniqueInput) 
+    : Promise<CompanyDetails> {
+    return this.prisma.companyDetails.delete({
+      where: where
+    });
   }
 }

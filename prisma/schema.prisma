@@ -17,7 +17,13 @@ enum Role {
   admin
 }
 
-enum Status {
+enum ModerationStatus {
+  todo
+  accepted
+  declined
+}
+
+enum EventStatus {
   in_progress
   running
   completed
@@ -68,7 +74,7 @@ model CompanyDetails {
 
   city String
 
-  status Status
+  status ModerationStatus @default(todo)
 
   account    Account @relation(references: [id], fields: [account_id], onUpdate: Cascade, onDelete: Cascade)
   account_id Int     @unique

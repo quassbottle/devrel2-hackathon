@@ -2,8 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as fs from 'fs';
-
-export let document;
+import { join } from 'node:path'
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
@@ -24,10 +23,17 @@ async function bootstrap() {
 		)
 		.build();
 
-	document = SwaggerModule.createDocument(app, config);
+	const document = SwaggerModule.createDocument(app, config);
 	SwaggerModule.setup('swagger', app, document);
 
+	const filePath = join(__dirname,'swagger');
+  if (!fs.existsSync(filePath)){
+      fs.mkdirSync(filePath, {recursive: true})
+			//fs.writeFileSync(join(filePath, 'swagger-spec.json'), JSON.stringify(document));
+  }
+	
+	fs.writeFileSync(join(filePath, 'swagger-spec.json'), JSON.stringify(document));
+	
 	await app.listen(80);
 }
-
 bootstrap();

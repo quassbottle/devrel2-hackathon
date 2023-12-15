@@ -1,11 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Account, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { LoginDao } from './dao/login.dao';
+import { LoginDto } from './dto/login.dto';
 import { TokenDto } from './dto/token.dto';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { ChangePasswordDao } from './dao/password.dao';
+import { ChangePasswordDto } from './dto/password.dto';
 
 @Injectable()
 export class AuthService {
@@ -16,8 +16,8 @@ export class AuthService {
 
   salt = 10;
 
-  async changePassword(id: number, dao: ChangePasswordDao) {
-    const { password } = dao;
+  async changePassword(id: number, dto: ChangePasswordDto) {
+    const { password } = dto;
     
     const hash = await bcrypt.hash(password, this.salt);
 
@@ -35,8 +35,8 @@ export class AuthService {
     }
   }
 
-  async login(dao: LoginDao): Promise<TokenDto> {
-    const { email, password } = dao;
+  async login(dto: LoginDto): Promise<TokenDto> {
+    const { email, password } = dto;
 
     const hash = await bcrypt.hash(password, this.salt);
 

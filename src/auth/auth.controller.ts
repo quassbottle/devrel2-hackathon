@@ -1,14 +1,14 @@
 import { Body, Controller, Get, HttpException, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDao } from './dao/login.dao';
+import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from './auth.guard';
-import { RegisterDao } from './dao/register.dao';
 import { UserService } from 'src/user/user.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import * as bcrypt from 'bcrypt';
 import { AccountService } from 'src/account/account.service';
 import { UserDetails } from '@prisma/client';
-import { ChangePasswordDao } from './dao/password.dao';
+import { RegisterDto } from './dto/register.dto';
+import { ChangePasswordDto } from './dto/password.dto';
 
 @Controller('auth')
 @ApiBearerAuth('JWT-auth')
@@ -19,7 +19,7 @@ export class AuthController {
               private readonly userService: UserService) {}
 
   @Post('register')
-  async register(@Body() register: RegisterDao): Promise<Record<string, any>> {
+  async register(@Body() register: RegisterDto): Promise<Record<string, any>> {
     const { email, password, first_name, middle_name, last_name, birthdate, username, city } = register;
 
     const candidateAcc = await this.accountService.account({
@@ -56,13 +56,13 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() login: LoginDao): Promise<Record<string, any>> {
+  async login(@Body() login: LoginDto): Promise<Record<string, any>> {
     return this.authService.login(login);
   }
 
-  @Post('changePassword')
+  @Post('change-password')
   @UseGuards(AuthGuard)
-  async changePassword(@Req() req, @Body() password: ChangePasswordDao) : Promise<Record<string, any>> {
+  async changePassword(@Req() req, @Body() password: ChangePasswordDto) : Promise<Record<string, any>> {
     console.log(req.user);
     return this.authService.changePassword(req.user.sub, password);
   }

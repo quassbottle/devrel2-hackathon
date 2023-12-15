@@ -1,39 +1,157 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseIntPipe, Req, HttpException, HttpStatus } from '@nestjs/common';
 import { CompanyService } from './company.service';
-import { CreateCompanyDto } from './dto/create-company.dto';
-import { UpdateCompanyDto } from './dto/update-company.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { CompanyDetails, UserDetails } from '@prisma/client';
+import { CompanyCreateDto } from './dto/create-company.dto';
+import { AccountService } from 'src/account/account.service';
+import { Role } from 'src/auth/role.enum';
+import { Roles } from 'src/auth/role.decorator';
+import { RoleGuard } from 'src/auth/role.guard';
+import { CompanyChangeStatusDto } from './dto/change-status.dto';
 
 @ApiTags('company')
 @ApiBearerAuth('JWT-auth')
-@UseGuards(AuthGuard)
 @Controller('company')
 export class CompanyController {
-  constructor(private readonly companyService: CompanyService) {}
+  constructor(private readonly companyService: CompanyService,
+              private readonly accountService: AccountService) {}
+
+  @Get('own')
+  @UseGuards(AuthGuard)
+  async getOwn(@Req() req) : Promise<CompanyDetails> {
+    const res = await this.companyService.company({
+      account_id: req.user.sub
+    });
+
+    if (res == null) {
+      throw new HttpException('Company not found', 404)
+    }
+
+    return res;
+  }
+
+  @ApiParam({
+    name: 'id',
+    type: Number,
+  })
+  @Get(':id')
+  async get(@Param('id', ParseIntPipe) id) : Promise<CompanyDetails> {
+    const res = await this.companyService.company({ id: id });
+    
+    if (res == null) {
+      throw new HttpException('Company not found', 404)
+    }
+
+    return res;
+  }
+
+  @ApiParam({
+    name: 'id',
+    type: Number,
+  })
+  @UseGuards(AuthGuard)
+  @Delete(':id')
+  async delete(@Param('id', ParseIntPipe) id, @Req() req) : Promise<CompanyDetails> {
+    const company = await this.companyService.company({ id: id });
+
+    if (company == null) {
+      throw new HttpException('Company not found', 404);
+    }
+
+    if (company.account_id !== req.user.sub && req.user.role != 'admin') {
+      throw new HttpException('This group is not yours', HttpStatus.FORBIDDEN);
+    }
+
+    return this.companyService.delete({ id: id });
+  }
+
+  @ApiParam({
+    name: 'id',
+    type: Number,
+  })
+  @Post('status/:id')
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(Role.Admin, Role.Moderator)
+  async changeStatus(@Param('id', ParseIntPipe) id, @Req() req, @Body() statusDto: CompanyChangeStatusDto) : Promise<CompanyDetails> {
+    const company = await this.companyService.company({ id });
+
+    if (company == null) {
+      throw new HttpException('Company not found', 404);
+    }
+
+    return this.companyService.update({
+      where: {
+        id: id
+      },
+      data: {
+        status: statusDto.status
+      }
+    })
+  }
+
+  @ApiParam({
+    name: 'id',
+    type: Number,
+  })
+  @Get(':id/employees')
+  async getEmployees(@Param('id', ParseIntPipe) id) : Promise<UserDetails[]> {
+    const company = await this.companyService.company({ id }, { employees: true });
+
+    if (company == null) {
+      throw new HttpException('Company not found', 404);
+    }
+
+    const owner = await this.accountService.account({ id: company.account_id }, { user: true });
+
+    return company.employees;
+  }
 
   @Post()
-  create(@Body() createCompanyDto: CreateCompanyDto) {
-    return this.companyService.create(createCompanyDto);
-  }
+  @UseGuards(AuthGuard)
+  async create(@Body() create: CompanyCreateDto, @Req() req) : Promise<any> {
+    const { title, description, city } = create;
+    const id = req.user.sub;
 
-  @Get()
-  findAll() {
-    return this.companyService.findAll();
-  }
+    const candidate = await this.companyService.company({
+      account_id: id
+    });
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.companyService.findOne(+id);
-  }
+    if (candidate) throw new HttpException('You already own a company', 400);
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCompanyDto: UpdateCompanyDto) {
-    return this.companyService.update(+id, updateCompanyDto);
-  }
+    const companyCreate = await this.accountService.update({
+      where: {
+        id
+      },
+      data: {
+        company: {
+          create: {
+            title, description, city
+          }
+        }
+      },
+      include: {
+        company: true
+      }
+    });
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.companyService.remove(+id);
+    const res = await this.accountService.update({
+      where: {
+        id
+      },
+      data: {
+        user: {
+          update: {
+            company_id: companyCreate.company.id
+          }
+        }
+      },
+      include: {
+        company: true
+      }
+    });
+
+
+    return res.company;
   }
 }
