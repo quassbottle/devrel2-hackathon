@@ -9,12 +9,16 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { StorageService } from './storage.service';
-import { ApiBody, ApiConsumes, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiOkResponse, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { FileUploadedDto } from './dto/file-uploaded.dto';
 
 @Controller('storage')
 export class StorageController {
   constructor(private readonly storageService: StorageService) {}
 
+  @ApiOkResponse({
+    type: FileUploadedDto
+  })
   @ApiBody({
     description: 'File upload',
     type: 'multipart/form-data',
@@ -35,6 +39,9 @@ export class StorageController {
     return this.storageService.uploadFile(file);
   }
 
+  @ApiOkResponse({
+    type: FileUploadedDto
+  })
   @ApiParam({
     name: 'id',
     type: Number,

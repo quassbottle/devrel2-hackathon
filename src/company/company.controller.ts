@@ -343,17 +343,18 @@ export class CompanyController {
     type: CompanyModel,
     isArray: true,
   })
-  @ApiQuery({
-    name: 'page',
-    type: Number
-  })
+  // @ApiQuery({
+  //   name: 'page',
+  //   type: Number
+  // })
   @Get()
-  async getAll(@Query('page', ParseIntPipe) page) {
-    page = Math.max(1, page);
+  async getAll(/*@Query('page', ParseIntPipe) page*/) {
+    // page = Math.max(1, page);
 
-    return this.userService.users({
-      take: 10,
-      skip: 10 * (page - 1)
-    })
+    // return this.userService.users({
+    //   take: 10,
+    //   skip: 10 * (page - 1)
+    // })
+    return this.companyService.companies({});
   }
 }

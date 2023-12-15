@@ -41,17 +41,20 @@ export class UserController {
     type: UserModel,
     isArray: true,
   })
-  @ApiQuery({
-    name: 'page',
-    type: Number
-  })
+  // @ApiQuery({
+  //   name: 'page',
+  //   type: Number
+  // })
   @Get()
-  async getAll(@Query('page', ParseIntPipe) page) {
-    page = Math.max(1, page);
-
-    return this.userService.users({
-      take: 10,
-      skip: 10 * (page - 1)
-    })
+  async getAll() {
+    return this.userService.users({});
   }
+  // async getAll(@Query('page', ParseIntPipe) page) {
+  //   page = Math.max(1, page);
+
+  //   return this.userService.users({
+  //     take: 10,
+  //     skip: 10 * (page - 1)
+  //   })
+  // }
 }
