@@ -4,6 +4,7 @@ import { LoginDao } from './dao/login.dao';
 import { AuthGuard } from './auth.guard';
 import { RegisterDao } from './dao/register.dao';
 import { UserService } from 'src/user/user.service';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {

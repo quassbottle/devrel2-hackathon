@@ -4,15 +4,31 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { Roles } from 'src/auth/role.decorator';
 import { Role } from 'src/auth/role.enum';
 import { RoleGuard } from 'src/auth/role.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth('JWT-auth')
 @Controller('account')
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
-  @Get()
+  @Get("me")
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(Role.Default, Role.Moderator, Role.Admin)
+  async test(@Req() req) {
+    return req.user;
+  }
+
+  @Get("moderator")
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(Role.Moderator, Role.Admin)
+  async testModerator(@Req() req) {
+    return req.user;
+  }
+
+  @Get("admin")
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(Role.Admin)
-  async test(@Req() req) {
+  async testAdmin(@Req() req) {
     return req.user;
   }
 
