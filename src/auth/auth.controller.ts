@@ -22,10 +22,10 @@ export class AuthController {
               private readonly userService: UserService) {}
 
   @ApiOkResponse({
-    type: BaseIdModel
+    type: TokenDto
   })
   @Post('register')
-  async register(@Body() register: RegisterDto): Promise<BaseIdModel> {
+  async register(@Body() register: RegisterDto): Promise<TokenDto> {
     const { email, password, first_name, middle_name, last_name, birthdate, username, city } = register;
 
     const candidateAcc = await this.accountService.account({
@@ -56,9 +56,7 @@ export class AuthController {
       }
     });
 
-    return {
-      id: created.id,
-    };
+    return this.authService.login({ email, password });
   }
 
   @ApiOkResponse({

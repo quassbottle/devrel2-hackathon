@@ -13,16 +13,22 @@ import { CompanyInviteDto } from './dto/company-invite.dto';
 import { CompanyModel } from './entity/company.entity';
 import { UserModel } from 'src/user/entities/user.entity';
 import { CompanyInviteModel } from './entity/invite.entity';
+import { UserService } from 'src/user/user.service';
 
 @ApiTags('company')
 @ApiBearerAuth('JWT-auth')
 @Controller('company')
 export class CompanyController {
   constructor(private readonly companyService: CompanyService,
-              private readonly accountService: AccountService) {}
+              private readonly accountService: AccountService,
+              private readonly userService: UserService) {}
   
   @ApiOkResponse({
     type: CompanyModel
+  })
+  @ApiParam({
+    name: 'id',
+    type: String,
   })
   @Post('join/:id')
   @UseGuards(AuthGuard)
@@ -34,7 +40,31 @@ export class CompanyController {
       throw new HttpException('Invite not found', 404)
     }
 
-    return res.company;
+    const account = await this.accountService.account({
+      id: req.user.sub
+    }, {
+      user: true
+    });
+
+    if (account.company != null) {
+      throw new HttpException('You already in a company', 400);
+    }
+
+    const result = await this.userService.update({
+      where: { id: account.user.id },
+      data: {
+        company: {
+          connect: {
+            id: res.company_id
+          }
+        }
+      },
+      include: {
+        company: true
+      }
+    });
+
+    return result.company;
   }
 
   @ApiOkResponse({
