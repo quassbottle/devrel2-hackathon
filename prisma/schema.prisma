@@ -30,7 +30,9 @@ enum EventStatus {
 }
 
 model CompanyInvite {
-  uuid String @db.Uuid @id @default(dbgenerated("gen_random_uuid()"))
+  id Int @id @default(autoincrement())
+
+  uuid String @default(dbgenerated("gen_random_uuid()")) @db.Uuid @unique
 
   created_at DateTime @default(now())
   valid_until DateTime @default(dbgenerated("now() + interval '7 days'"))
@@ -70,8 +72,10 @@ model UserDetails {
   account    Account @relation(references: [id], fields: [account_id], onUpdate: Cascade, onDelete: Cascade)
   account_id Int     @unique
 
-  company    CompanyDetails? @relation(references: [id], fields: [company_id])
+  company    CompanyDetails? @relation(name: "works_at", references: [id], fields: [company_id])
   company_id Int?
+  
+  subscribed_to CompanyDetails[]
 
   events Event[]
 
@@ -90,9 +94,11 @@ model CompanyDetails {
 
   account    Account @relation(references: [id], fields: [account_id], onUpdate: Cascade, onDelete: Cascade)
   account_id Int     @unique
+
+  subscribers UserDetails[]
   
   events Event[]
-  employees UserDetails[]
+  employees UserDetails[] @relation(name: "works_at")
   invites CompanyInvite[]
 }
 

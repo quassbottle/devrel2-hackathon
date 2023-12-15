@@ -3,6 +3,9 @@ import { CompanyInvite } from "@prisma/client";
 
 export class CompanyInviteModel implements CompanyInvite {
   @ApiProperty()
+  id: number;
+
+  @ApiProperty()
   uuid: string;
 
   @ApiProperty()

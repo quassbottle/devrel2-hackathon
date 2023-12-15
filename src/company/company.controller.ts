@@ -1,6 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseIntPipe, Req, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseIntPipe, Req, HttpException, HttpStatus, ParseUUIDPipe, Query } from '@nestjs/common';
 import { CompanyService } from './company.service';
-import { ApiBearerAuth, ApiOkResponse, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { CompanyDetails, CompanyInvite, Prisma, UserDetails } from '@prisma/client';
 import { CompanyCreateDto } from './dto/create-company.dto';
@@ -28,12 +28,82 @@ export class CompanyController {
   })
   @ApiParam({
     name: 'id',
-    type: String,
+    type: Number,
   })
-  @Post('join/:id')
   @UseGuards(AuthGuard)
-  async join(@Req() req, @Body() dto: CompanyInviteDto) : Promise<CompanyDetails> {
-    const { uuid } = dto;
+  @Post(':id/unsubscribe')
+  async unsubscribe(@Req() req, @Param('id', ParseIntPipe) id) {
+    const res = await this.companyService.company({
+      account_id: req.user.sub
+    });
+
+    if (res == null) {
+      throw new HttpException('Company not found', 404)
+    }
+    
+    const subscribe = await this.userService.update({
+      where: { id: req.user.sub },
+      data: {
+        subscribed_to: {
+          disconnect: {
+            id
+          }
+        }
+      },
+      include: {
+        company: true
+      },
+    });
+
+    return subscribe.company;
+  }
+
+  @ApiOkResponse({
+    type: CompanyModel
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+  })
+  @UseGuards(AuthGuard)
+  @Post(':id/subscribe')
+  async subscribe(@Req() req, @Param('id', ParseIntPipe) id) {
+    const res = await this.companyService.company({
+      account_id: req.user.sub
+    });
+
+    if (res == null) {
+      throw new HttpException('Company not found', 404)
+    }
+    
+    const subscribe = await this.userService.update({
+      where: { id: req.user.sub },
+      data: {
+        subscribed_to: {
+          connect: {
+            id
+          }
+        }
+      },
+      include: {
+        company: true
+      },
+    });
+
+    return subscribe.company;
+  }
+
+  @ApiOkResponse({
+    type: CompanyModel
+  })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    format: 'uuid',
+  })
+  @Post('/join/:uuid')
+  @UseGuards(AuthGuard)
+  async join(@Req() req, @Param('uuid') uuid) : Promise<CompanyDetails> {
     const res = await this.companyService.invite({ uuid });
 
     if (res == null) {
@@ -67,44 +137,50 @@ export class CompanyController {
     return result.company;
   }
 
-  @ApiOkResponse({
-    type: CompanyInviteModel
-  })
-  @Post('create-invite')
-  @UseGuards(AuthGuard)
-  async createInvite(@Req() req) : Promise<CompanyInvite> {
-    const res = await this.companyService.company({
-      account_id: req.user.sub
-    });
+  // @ApiOkResponse({
+  //   type: CompanyInviteModel
+  // })
+  // @Post('create-invite')
+  // @UseGuards(AuthGuard)
+  // async createInvite(@Req() req) : Promise<CompanyInvite> {
+  //   const res = await this.companyService.company({
+  //     account_id: req.user.sub
+  //   });
 
-    if (res == null) {
-      throw new HttpException('Company not found', 404)
-    }
+  //   if (res == null) {
+  //     throw new HttpException('Company not found', 404)
+  //   }
 
-    return this.companyService.createInvite({
-      company: {
-        connect: {
-          id: res.id
-        }
-      }
-    })
-  }
+  //   return this.companyService.createInvite({
+  //     company: {
+  //       connect: {
+  //         id: res.id
+  //       }
+  //     }
+  //   })
+  // }
 
-  @ApiOkResponse({
-    type: CompanyInviteModel
-  })
-  @Post('revoke-invite')
-  @UseGuards(AuthGuard)
-  async revokeInvite(@Req() req, @Body() dto: CompanyInviteDto) : Promise<CompanyInvite> {
-    const { uuid } = dto;
-    const res = this.companyService.invite({ uuid });
+  // @ApiOkResponse({
+  //   type: CompanyInviteModel
+  // })
+  // @ApiParam({
+  //   name: 'id',
+  //   type: String,
+  //   format: 'uuid',
+  // })
+  // @Post('revoke-invite/:id')
+  // @UseGuards(AuthGuard)
+  // async revokeInvite(@Req() req, @Param('id') uuid) : Promise<CompanyInvite> {
+  //   console.log(uuid);
+
+  //   const res = await this.companyService.invite({ uuid: uuid });
     
-    if (res == null) {
-      throw new HttpException('Invite not found', 404)
-    }
+  //   if (res == null) {
+  //     throw new HttpException('Invite not found', 404)
+  //   }
 
-    return this.companyService.deleteInvite({ uuid });
-  }
+  //   return this.companyService.deleteInvite({ uuid });
+  // }
 
   @ApiOkResponse({
     type: CompanyModel
@@ -261,5 +337,23 @@ export class CompanyController {
 
 
     return res.company;
+  }
+
+  @ApiOkResponse({
+    type: CompanyModel,
+    isArray: true,
+  })
+  @ApiQuery({
+    name: 'page',
+    type: Number
+  })
+  @Get()
+  async getAll(@Query('page', ParseIntPipe) page) {
+    page = Math.max(1, page);
+
+    return this.userService.users({
+      take: 10,
+      skip: 10 * (page - 1)
+    })
   }
 }

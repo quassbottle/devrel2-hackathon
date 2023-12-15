@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as fs from 'fs';
 import { join } from 'node:path'
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
@@ -43,6 +44,8 @@ async function bootstrap() {
 	
 	fs.writeFileSync(join(filePath, 'swagger-spec.json'), JSON.stringify(document));
 	
+	app.useGlobalPipes(new ValidationPipe());
+
 	await app.listen(80);
 }
 bootstrap();
