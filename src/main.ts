@@ -7,6 +7,15 @@ import { join } from 'node:path'
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 
+	app.enableCors({
+    origin: true,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    credentials: true,
+    allowedHeaders:
+      'X-Requested-With, Origin, X-HTTP-Method-Override, Content-Type, Accept, Observe, Authorization'
+    //allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept'
+  })
+
 	const config = new DocumentBuilder()
 		.setTitle('API')
 		.setDescription('w')

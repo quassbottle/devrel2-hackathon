@@ -1,12 +1,16 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpException, ParseIntPipe, Query } from '@nestjs/common';
 import { UserService } from './user.service';
-import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { UserModel } from './entities/user.entity';
 
 @ApiTags('user')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @ApiOkResponse({
+    type: UserModel
+  })
   @ApiParam({
     name: 'id',
     type: Number,
@@ -16,6 +20,10 @@ export class UserController {
     return this.userService.user({ id: id })
   }
 
+  @ApiOkResponse({
+    type: UserModel,
+    isArray: true,
+  })
   @ApiQuery({
     name: 'page',
     type: Number

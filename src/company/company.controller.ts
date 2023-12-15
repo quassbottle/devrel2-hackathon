@@ -1,14 +1,18 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseIntPipe, Req, HttpException, HttpStatus } from '@nestjs/common';
 import { CompanyService } from './company.service';
-import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { CompanyDetails, UserDetails } from '@prisma/client';
+import { CompanyDetails, CompanyInvite, Prisma, UserDetails } from '@prisma/client';
 import { CompanyCreateDto } from './dto/create-company.dto';
 import { AccountService } from 'src/account/account.service';
 import { Role } from 'src/auth/role.enum';
 import { Roles } from 'src/auth/role.decorator';
 import { RoleGuard } from 'src/auth/role.guard';
 import { CompanyChangeStatusDto } from './dto/change-status.dto';
+import { CompanyInviteDto } from './dto/company-invite.dto';
+import { CompanyModel } from './entity/company.entity';
+import { UserModel } from 'src/user/entities/user.entity';
+import { CompanyInviteModel } from './entity/invite.entity';
 
 @ApiTags('company')
 @ApiBearerAuth('JWT-auth')
@@ -16,7 +20,65 @@ import { CompanyChangeStatusDto } from './dto/change-status.dto';
 export class CompanyController {
   constructor(private readonly companyService: CompanyService,
               private readonly accountService: AccountService) {}
+  
+  @ApiOkResponse({
+    type: CompanyModel
+  })
+  @Post('join/:id')
+  @UseGuards(AuthGuard)
+  async join(@Req() req, @Body() dto: CompanyInviteDto) : Promise<CompanyDetails> {
+    const { uuid } = dto;
+    const res = await this.companyService.invite({ uuid });
 
+    if (res == null) {
+      throw new HttpException('Invite not found', 404)
+    }
+
+    return res.company;
+  }
+
+  @ApiOkResponse({
+    type: CompanyInviteModel
+  })
+  @Post('create-invite')
+  @UseGuards(AuthGuard)
+  async createInvite(@Req() req) : Promise<CompanyInvite> {
+    const res = await this.companyService.company({
+      account_id: req.user.sub
+    });
+
+    if (res == null) {
+      throw new HttpException('Company not found', 404)
+    }
+
+    return this.companyService.createInvite({
+      company: {
+        connect: {
+          id: res.id
+        }
+      }
+    })
+  }
+
+  @ApiOkResponse({
+    type: CompanyInviteModel
+  })
+  @Post('revoke-invite')
+  @UseGuards(AuthGuard)
+  async revokeInvite(@Req() req, @Body() dto: CompanyInviteDto) : Promise<CompanyInvite> {
+    const { uuid } = dto;
+    const res = this.companyService.invite({ uuid });
+    
+    if (res == null) {
+      throw new HttpException('Invite not found', 404)
+    }
+
+    return this.companyService.deleteInvite({ uuid });
+  }
+
+  @ApiOkResponse({
+    type: CompanyModel
+  })
   @Get('own')
   @UseGuards(AuthGuard)
   async getOwn(@Req() req) : Promise<CompanyDetails> {
@@ -31,6 +93,9 @@ export class CompanyController {
     return res;
   }
 
+  @ApiOkResponse({
+    type: CompanyModel
+  })
   @ApiParam({
     name: 'id',
     type: Number,
@@ -46,6 +111,9 @@ export class CompanyController {
     return res;
   }
 
+  @ApiOkResponse({
+    type: CompanyModel
+  })
   @ApiParam({
     name: 'id',
     type: Number,
@@ -66,6 +134,9 @@ export class CompanyController {
     return this.companyService.delete({ id: id });
   }
 
+  @ApiOkResponse({
+    type: CompanyModel
+  })
   @ApiParam({
     name: 'id',
     type: Number,
@@ -80,7 +151,7 @@ export class CompanyController {
       throw new HttpException('Company not found', 404);
     }
 
-    return this.companyService.update({
+    return this.companyService.updateCompany({
       where: {
         id: id
       },
@@ -90,6 +161,10 @@ export class CompanyController {
     })
   }
 
+  @ApiOkResponse({
+    type: UserModel,
+    isArray: true,
+  })
   @ApiParam({
     name: 'id',
     type: Number,
@@ -107,9 +182,12 @@ export class CompanyController {
     return company.employees;
   }
 
+  @ApiOkResponse({
+    type: CompanyModel,
+  })
   @Post()
   @UseGuards(AuthGuard)
-  async create(@Body() create: CompanyCreateDto, @Req() req) : Promise<any> {
+  async create(@Body() create: CompanyCreateDto, @Req() req) : Promise<CompanyDetails> {
     const { title, description, city } = create;
     const id = req.user.sub;
 

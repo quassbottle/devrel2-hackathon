@@ -3,12 +3,15 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from './auth.guard';
 import { UserService } from 'src/user/user.service';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import * as bcrypt from 'bcrypt';
 import { AccountService } from 'src/account/account.service';
 import { UserDetails } from '@prisma/client';
 import { RegisterDto } from './dto/register.dto';
 import { ChangePasswordDto } from './dto/password.dto';
+import { UserModel } from 'src/user/entities/user.entity';
+import { BaseIdModel } from 'src/base/entities/id.entity';
+import { TokenDto } from './dto/token.dto';
 
 @Controller('auth')
 @ApiBearerAuth('JWT-auth')
@@ -18,8 +21,11 @@ export class AuthController {
               private readonly accountService: AccountService,
               private readonly userService: UserService) {}
 
+  @ApiOkResponse({
+    type: BaseIdModel
+  })
   @Post('register')
-  async register(@Body() register: RegisterDto): Promise<Record<string, any>> {
+  async register(@Body() register: RegisterDto): Promise<BaseIdModel> {
     const { email, password, first_name, middle_name, last_name, birthdate, username, city } = register;
 
     const candidateAcc = await this.accountService.account({
@@ -55,18 +61,27 @@ export class AuthController {
     };
   }
 
+  @ApiOkResponse({
+    type: TokenDto
+  })
   @Post('login')
-  async login(@Body() login: LoginDto): Promise<Record<string, any>> {
+  async login(@Body() login: LoginDto): Promise<TokenDto> {
     return this.authService.login(login);
   }
 
+  @ApiOkResponse({
+    type: BaseIdModel
+  })
   @Post('change-password')
   @UseGuards(AuthGuard)
-  async changePassword(@Req() req, @Body() password: ChangePasswordDto) : Promise<Record<string, any>> {
+  async changePassword(@Req() req, @Body() password: ChangePasswordDto) : Promise<BaseIdModel> {
     console.log(req.user);
     return this.authService.changePassword(req.user.sub, password);
   }
 
+  @ApiOkResponse({
+    type: UserModel
+  })
   @UseGuards(AuthGuard)
   @Get('profile')
   async profile(@Req() req) {

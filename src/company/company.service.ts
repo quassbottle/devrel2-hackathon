@@ -1,12 +1,31 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CompanyDetails, Prisma } from '@prisma/client';
+import { CompanyDetails, CompanyInvite, Prisma } from '@prisma/client';
 
 @Injectable()
 export class CompanyService {
   constructor (private readonly prisma: PrismaService) {}
-  
-  async create(data: Prisma.CompanyDetailsCreateInput): Promise<CompanyDetails> {
+
+  async createInvite(data: Prisma.CompanyInviteCreateInput): Promise<CompanyInvite> {
+    return this.prisma.companyInvite.create({
+      data: data
+    });
+  }
+
+  async deleteInvite(where: Prisma.CompanyInviteWhereUniqueInput): Promise<CompanyInvite> {
+    return this.prisma.companyInvite.delete({
+      where
+    });
+  }
+
+  async invite(where: Prisma.CompanyInviteWhereUniqueInput, include?: Prisma.CompanyInviteInclude) {
+    return this.prisma.companyInvite.findUnique({
+      where: where,
+      include: include
+    });
+  }
+
+  async createCompany(data: Prisma.CompanyDetailsCreateInput): Promise<CompanyDetails> {
     return this.prisma.companyDetails.create({
       data: data,
     });
@@ -38,7 +57,7 @@ export class CompanyService {
     })
   }
 
-  async update(params: {
+  async updateCompany(params: {
     where: Prisma.CompanyDetailsWhereUniqueInput,
     data: Prisma.CompanyDetailsUpdateInput,
     include?: Prisma.CompanyDetailsInclude
