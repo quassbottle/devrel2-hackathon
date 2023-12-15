@@ -3,6 +3,9 @@ import { $Enums, CompanyDetails } from "@prisma/client";
 
 export class CompanyModel implements CompanyDetails {
   @ApiProperty()
+  avatar_id: number;
+
+  @ApiProperty()
   id: number;
 
   @ApiProperty()

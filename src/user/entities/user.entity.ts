@@ -3,6 +3,9 @@ import { UserDetails } from "@prisma/client";
 
 export class UserModel implements UserDetails {
   @ApiProperty()
+  avatar_id: number;
+  
+  @ApiProperty()
   id: number;
 
   @ApiProperty()

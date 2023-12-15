@@ -11,6 +11,18 @@ datasource db {
   url      = env("DATABASE_URL") 
 }
 
+model Image {
+  id Int @id @default(autoincrement())
+
+  title String
+  type String
+  url String?
+  size BigInt
+
+  company CompanyDetails?
+  user UserDetails?
+}
+
 enum Role {
   default
   moderator
@@ -80,6 +92,9 @@ model UserDetails {
   events Event[]
 
   tags UserTag[]
+
+  avatar Image? @relation(fields: [avatar_id], references: [id])
+  avatar_id Int? @unique
 }
 
 model CompanyDetails {
@@ -100,6 +115,9 @@ model CompanyDetails {
   events Event[]
   employees UserDetails[] @relation(name: "works_at")
   invites CompanyInvite[]
+
+  avatar Image? @relation(fields: [avatar_id], references: [id])
+  avatar_id Int? @unique
 }
 
 model UserTag {
