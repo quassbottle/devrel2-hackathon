@@ -91,12 +91,17 @@ export class EventController {
   @Post(':id/update-status')
   async updateStatus(@Param('id', ParseIntPipe) id, @Req() req, @Body() dto: EventChangeStatusDto) : Promise<EventModel> {
     const candidate = await this.eventService.event({ id });
-    
+
     if (candidate == null) {
       throw new HttpException('Event not found', 404);
     }
 
-    if (candidate.company_id != id) {
+    const own = await this.companyService.company({ account_id: req.user.sub });
+    if (own == null) {
+      throw new HttpException('You do not own a company', 400);
+    }
+
+    if (candidate.company_id != own.id && req.user.role != 'admin') {
       throw new HttpException('Event is not yours', HttpStatus.UNAUTHORIZED);
     }
 
