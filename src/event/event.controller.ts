@@ -116,10 +116,7 @@ export class EventController {
             message: `Событие ${res.title} началось!`,
             token: host.notifications_tg_bot
           });
-          this.notifyService.notifyEmail(host.id, {
-            message: `Событие ${res.title} началось!`,
-            producer_mail: host.account.email
-          });
+          
           break;
         }
         case 'completed': {
@@ -127,14 +124,28 @@ export class EventController {
             message: `Событие ${res.title} завершилось!`,
             token: host.notifications_tg_bot
           });
-          this.notifyService.notifyEmail(host.id, {
-            message: `Событие ${res.title} завершилось!`,
-            producer_mail: host.account.email
-          });
           break;
         }
       }
     }
+    
+    switch (res.status) {
+      case 'running': {
+        this.notifyService.notifyEmail(host.id, {
+          message: `Событие ${res.title} началось!`,
+          producer_mail: host.account.email
+        });
+        break;
+      }
+      case 'completed': {
+        this.notifyService.notifyEmail(host.id, {
+          message: `Событие ${res.title} завершилось!`,
+          producer_mail: host.account.email
+        });
+        break;
+      }
+    }
+
 
     return res;
   }
@@ -185,11 +196,11 @@ export class EventController {
         message: `Событие ${event.title} появилось!`,
         token: host.notifications_tg_bot
       });
-      this.notifyService.notifyEmail(host.id, {
-        message: `Событие ${event.title} появилось!`,
-        producer_mail: host.account.email
-      });
     }
+    this.notifyService.notifyEmail(host.id, {
+      message: `Событие ${event.title} появилось!`,
+      producer_mail: host.account.email
+    });
 
     return {
       ...event, banner
