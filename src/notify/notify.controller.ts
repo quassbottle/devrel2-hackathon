@@ -2,15 +2,19 @@ import { HttpService } from '@nestjs/axios';
 import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
 import axios from 'axios';
 import { NotifyTelegramDto } from './dto/telegram-notify.dto';
-import { ApiBody, ApiParam } from '@nestjs/swagger';
+import { ApiBody, ApiOkResponse, ApiParam } from '@nestjs/swagger';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EmailNotifyDto } from './dto/email-notify.dto';
+import { MessageDto } from './dto/ok.dto';
 
 @Controller('notify')
 export class NotifyController {
   constructor(private readonly httpService: HttpService,
               private readonly prisma: PrismaService) {}
   
+  @ApiOkResponse({
+    type: MessageDto
+  })
   @ApiBody({
     type: NotifyTelegramDto
   })
@@ -27,6 +31,9 @@ export class NotifyController {
     return res.data;
   }
 
+  @ApiOkResponse({
+    type: MessageDto
+  })
   @ApiBody({
     type: EmailNotifyDto
   })
