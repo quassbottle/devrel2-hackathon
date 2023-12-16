@@ -7,7 +7,7 @@ import { HttpService } from '@nestjs/axios';
 export class AnalyticsController {
   constructor(private readonly httpService: HttpService) {}
 
-  private readonly host = '127.0.0.1:1488';
+  private readonly host = '127.0.0.1:1488/';
   
   @Get('tags/all/stat')
   async getTags() {
