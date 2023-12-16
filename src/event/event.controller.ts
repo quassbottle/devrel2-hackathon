@@ -573,6 +573,52 @@ export class EventController {
     name: 'rq'
   })
   @ApiOkResponse({
+    type: EventJoinModel
+  })
+  @UseGuards(AuthGuard)
+  @Get(':id/requests/:rq/status')
+  async getStatus(@Param('id', ParseIntPipe) id, @Param('rq', ParseIntPipe) rq, @Req() req, @Body() dto: EventJoinStatusDto) {
+    const candidate = await this.eventService.event({ id }, { requests: true, company: true });
+    const candidateRequest = await this.prismaService.eventJoin.findFirst({
+      where: {
+        id: rq
+      },
+      include: {
+        event: true
+      }
+    });
+    
+    if (candidate == null) {
+      throw new HttpException('Event not found', 404);
+    }
+    if (candidateRequest == null) {
+      throw new HttpException('Request not found', 404);
+    }
+
+    if (candidate.company.account_id !== req.user.sub && req.user.role != 'admin') {
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    }
+    if (candidate.company.account_id !== req.user.sub && req.user.role != 'moderator') {
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    }
+
+    return this.prismaService.eventJoin.findFirst({
+      where: {
+        event_id: id,
+        id: rq
+      },
+    });
+  }
+
+  @ApiParam({
+    type: Number,
+    name: 'id'
+  })
+  @ApiParam({
+    type: Number,
+    name: 'rq'
+  })
+  @ApiOkResponse({
     type: EventJoinModel,
     isArray: true,
   })
