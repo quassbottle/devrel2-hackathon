@@ -29,7 +29,34 @@ export class EventController {
               private readonly userService: UserService,
               private readonly prismaService: PrismaService) {}
   
-  
+  @ApiParam({
+    type: Number,
+    name: 'id'
+  })
+  @ApiOkResponse({
+    type: UserModel,
+    isArray: true
+  })
+  @Get(':id/participants')
+  async getParticipants(@Param('id', ParseIntPipe) id) {
+    const candidate = await this.prismaService.event.findFirst({
+      where: {
+        id
+      },
+      include: {
+        participants: {
+          include: {
+            avatar: true
+          }
+        }
+      }
+    });
+    if (candidate == null) {
+      throw new HttpException('Event not found', 404);
+    }
+
+    return candidate.participants;
+  }
   
   @ApiParam({
     type: Number,
