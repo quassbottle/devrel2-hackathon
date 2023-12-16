@@ -139,14 +139,14 @@ export class EventController {
     
     switch (res.status) {
       case 'running': {
-        this.notifyService.notifyEmail(host.id, {
+        this.notifyService.notifyEmail({
           message: `Событие ${res.title} началось!`,
           producer_mail: host.account.email
         });
         break;
       }
       case 'completed': {
-        this.notifyService.notifyEmail(host.id, {
+        this.notifyService.notifyEmail({
           message: `Событие ${res.title} завершилось!`,
           producer_mail: host.account.email
         });
@@ -205,7 +205,7 @@ export class EventController {
         token: host.notifications_tg_bot
       });
     }
-    this.notifyService.notifyEmail(host.id, {
+    this.notifyService.notifyEmail({
       message: `Событие ${event.title} появилось!`,
       producer_mail: host.account.email
     });

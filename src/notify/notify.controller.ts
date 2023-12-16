@@ -42,14 +42,14 @@ export class NotifyController {
     type: Number,
     name: 'id'
   })
-  @Post('mail/:id')
-  async notifyEmail(@Param('id', ParseIntPipe) id, @Body() dto: EmailNotifyDto) {
+  @Post('mail')
+  async notifyEmail(@Body() dto: EmailNotifyDto) {
     // const company = await this.prisma.companyDetails.findFirst({ where: { id }, include: { account: true }})
     // const res = await axios.post('http://provider-service:666/mail/send', { 
     //   message: dto.message,
     //   producer_mail: company.account.email,
     //  });
     // return res.data;
-    return this.notifyService.notifyEmail(id, dto);
+    return this.notifyService.notifyEmail(dto);
   }
 }

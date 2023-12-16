@@ -19,11 +19,10 @@ export class NotifyService {
     return res.data;
   }
 
-  async notifyEmail(id, dto: EmailNotifyDto) : Promise<MessageDto> {
-    const company = await this.prisma.companyDetails.findFirst({ where: { id }, include: { account: true }})
+  async notifyEmail(dto: EmailNotifyDto) : Promise<MessageDto> {
     const res = await axios.post('http://provider-service:666/mail/send', { 
       message: dto.message,
-      producer_mail: company.account.email,
+      producer_mail: dto.producer_mail,
      });
     return res.data;
   }  
