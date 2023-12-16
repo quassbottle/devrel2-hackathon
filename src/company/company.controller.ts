@@ -95,49 +95,49 @@ export class CompanyController {
     return subscribe.company;
   }
 
-  @ApiOkResponse({
-    type: CompanyModel
-  })
-  @ApiParam({
-    name: 'id',
-    type: String,
-    format: 'uuid',
-  })
-  @Post('/join/:uuid')
-  @UseGuards(AuthGuard)
-  async join(@Req() req, @Param('uuid') uuid) : Promise<CompanyDetails> {
-    const res = await this.companyService.invite({ uuid });
+  // @ApiOkResponse({
+  //   type: CompanyModel
+  // })
+  // @ApiParam({
+  //   name: 'id',
+  //   type: String,
+  //   format: 'uuid',
+  // })
+  // @Post('/join/:uuid')
+  // @UseGuards(AuthGuard)
+  // async join(@Req() req, @Param('uuid') uuid) : Promise<CompanyDetails> {
+  //   const res = await this.companyService.invite({ uuid });
 
-    if (res == null) {
-      throw new HttpException('Invite not found', 404)
-    }
+  //   if (res == null) {
+  //     throw new HttpException('Invite not found', 404)
+  //   }
 
-    const account = await this.accountService.account({
-      id: req.user.sub
-    }, {
-      user: true
-    });
+  //   const account = await this.accountService.account({
+  //     id: req.user.sub
+  //   }, {
+  //     user: true
+  //   });
 
-    if (account.company != null) {
-      throw new HttpException('You already in a company', 400);
-    }
+  //   if (account.company != null) {
+  //     throw new HttpException('You already in a company', 400);
+  //   }
 
-    const result = await this.userService.update({
-      where: { id: account.user.id },
-      data: {
-        company: {
-          connect: {
-            id: res.company_id
-          }
-        }
-      },
-      include: {
-        company: true
-      }
-    });
+  //   const result = await this.userService.update({
+  //     where: { id: account.user.id },
+  //     data: {
+  //       company: {
+  //         connect: {
+  //           id: res.company_id
+  //         }
+  //       }
+  //     },
+  //     include: {
+  //       company: true
+  //     }
+  //   });
 
-    return result.company;
-  }
+  //   return result.company;
+  // }
 
   // @ApiOkResponse({
   //   type: CompanyInviteModel

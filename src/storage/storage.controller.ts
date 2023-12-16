@@ -13,6 +13,7 @@ import { StorageService } from './storage.service';
 import { ApiBody, ApiConsumes, ApiOkResponse, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { FileUploadedDto } from './dto/file-uploaded.dto';
 
+@ApiTags('storage')
 @Controller('storage')
 export class StorageController {
   constructor(private readonly storageService: StorageService) {}
