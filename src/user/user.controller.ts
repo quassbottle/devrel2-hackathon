@@ -5,7 +5,6 @@ import { UserModel } from './entities/user.entity';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { AccountService } from 'src/account/account.service';
 import { StorageService } from 'src/storage/storage.service';
-import { ImageModel } from 'src/storage/entity/image.entity';
 
 @ApiTags('user')
 @Controller('user')

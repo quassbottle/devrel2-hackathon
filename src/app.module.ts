@@ -11,6 +11,8 @@ import { join } from 'path';
 import { StorageService } from './storage/storage.service';
 import { StorageModule } from './storage/storage.module';
 import { EventModule } from './event/event.module';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -24,7 +26,8 @@ import { EventModule } from './event/event.module';
       serveStaticOptions: {}
     }),
     StorageModule,
-    EventModule
+    EventModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService, StorageService],
