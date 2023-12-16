@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseIntPipe, Req, HttpException, HttpStatus, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseIntPipe, Req, HttpException, HttpStatus, ParseUUIDPipe, Query, Put } from '@nestjs/common';
 import { CompanyService } from './company.service';
 import { ApiBearerAuth, ApiOkResponse, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -15,6 +15,10 @@ import { UserModel } from 'src/user/entities/user.entity';
 import { CompanyInviteModel } from './entity/invite.entity';
 import { UserService } from 'src/user/user.service';
 import { StorageService } from 'src/storage/storage.service';
+import { CompanyTgBotTokenDto } from './dto/tg-bot-token.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CompanyTokenModel as CompanyTokenModel } from './entity/company-token.entity';
+import { CompanyUpdateDto } from './dto/company-update.dto';
 
 @ApiTags('company')
 @ApiBearerAuth('JWT-auth')
@@ -23,7 +27,8 @@ export class CompanyController {
   constructor(private readonly companyService: CompanyService,
               private readonly accountService: AccountService,
               private readonly userService: UserService,
-              private readonly storageService: StorageService) {}
+              private readonly storageService: StorageService,
+              private readonly prisma: PrismaService) {}
   
   @ApiOkResponse({
     type: CompanyModel
@@ -225,14 +230,23 @@ export class CompanyController {
     type: Number,
   })
   @Get(':id')
-  async get(@Param('id', ParseIntPipe) id) : Promise<CompanyModel> {
-    const res = await this.companyService.company({ id: id }, { avatar: true });
+  async get(@Param('id', ParseIntPipe) id) {
+    const res =  this.prisma.companyDetails.findMany({
+      select: {
+        title: true,
+        description: true,
+        avatar: true,
+        avatar_id: true,
+        id: true,
+        city: true,
+        status: true, 
+        account_id: true
+      }
+    });
     
     if (res == null) {
       throw new HttpException('Company not found', 404)
     }
-
-    const candidate = await this.storageService.file({ id: res.avatar_id });
 
     return res;
   }
@@ -254,7 +268,7 @@ export class CompanyController {
     }
 
     if (company.account_id !== req.user.sub && req.user.role != 'admin') {
-      throw new HttpException('This group is not yours', HttpStatus.FORBIDDEN);
+      throw new HttpException('This company is not yours', HttpStatus.FORBIDDEN);
     }
 
     return this.companyService.delete({ id: id });
@@ -380,6 +394,104 @@ export class CompanyController {
     //   take: 10,
     //   skip: 10 * (page - 1)
     // })
-    return this.companyService.companies({ include: { avatar: true }});
+    return this.prisma.companyDetails.findMany({
+      select: {
+        title: true,
+        description: true,
+        avatar: true,
+        avatar_id: true,
+        id: true,
+        city: true,
+        status: true, 
+        account_id: true
+      }
+    });
+    //return this.companyService.companies({ include: { avatar: true }} );
+  }
+
+  @ApiParam({
+    name: 'id',
+    type: Number,
+  })
+  @ApiResponse({
+    type: CompanyTokenModel
+  })
+  @UseGuards(AuthGuard)
+  @Post(':id/set-bot-token')
+  async setBotToken(@Req() req, @Param('id', ParseIntPipe) id, @Body() dto: CompanyTgBotTokenDto) {
+    const { token } = dto;
+
+    const company = await this.companyService.company({
+      id
+    });
+
+    if (company == null) {
+      throw new HttpException('Company not found', 404);
+    }
+
+    if (company.account_id !== req.user.sub && req.user.role != 'admin') {
+      throw new HttpException('This company is not yours', HttpStatus.FORBIDDEN);
+    }
+
+    return this.prisma.companyDetails.update({
+      where: { id },
+      data: {
+        notifications_tg_bot: token
+      },
+      include: {
+        avatar: true
+      }
+    });
+  }
+
+  @ApiOkResponse({
+    type: CompanyModel
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+  })
+  @UseGuards(AuthGuard)
+  @Put(':id')
+  async update(@Param('id', ParseIntPipe) id, @Body() dto: CompanyUpdateDto, @Req() req) : Promise<CompanyModel> {
+    const res = await this.prisma.companyDetails.findFirst({ where: { id }});
+
+    if (res.account_id !== req.user.sub && req.user.role != 'admin') {
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    }
+
+    const { title, description, avatar_id, city } = dto;
+    
+    if (res == null) {
+      throw new HttpException('Company not found', 404)
+    }
+
+    const updated = await this.prisma.companyDetails.update({
+      where: { id },
+      data: {
+        avatar: {
+          connect: {
+            id: avatar_id
+          }
+        },
+        title,
+        description,
+        city,
+      },
+      include: {
+        avatar: true,
+      }
+    });
+    
+    return {
+      id: updated.id,
+      title: updated.title,
+      description: updated.description,
+      city: updated.city,
+      avatar_id: updated.avatar_id,
+      avatar: { ...updated.avatar },
+      status: updated.status,
+      account_id: updated.account_id,
+    }
   }
 }

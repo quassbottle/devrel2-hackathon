@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpException, ParseIntPipe, Query, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpException, ParseIntPipe, Query, UseGuards, Req, Put } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiBearerAuth, ApiOkResponse, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { UserModel } from './entities/user.entity';
@@ -7,6 +7,7 @@ import { AccountService } from 'src/account/account.service';
 import { StorageService } from 'src/storage/storage.service';
 import { CompanyModel } from 'src/company/entity/company.entity';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UserUpdateDto } from './dto/user-update.dto';
 
 @ApiTags('user')
 @Controller('user')
@@ -56,6 +57,70 @@ export class UserController {
   @Get(':id')
   async getById(@Param('id', ParseIntPipe) id) {
     return this.userService.user({ id: id }, { avatar: true })
+  }
+
+  @ApiOkResponse({
+    type: UserModel
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+  })
+  @UseGuards(AuthGuard)
+  @Put(':id')
+  async update(@Param('id', ParseIntPipe) id, @Body() dto: UserUpdateDto, @Req() req) : Promise<UserModel> {
+    const res = await this.prisma.companyDetails.findFirst({ where: { id }});
+
+    if (res.account_id !== req.user.sub && req.user.role != 'admin') {
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    }
+
+    const { first_name, last_name, middle_name, birthdate, avatar_id, city, username } = dto;
+    
+    if (res == null) {
+      throw new HttpException('User not found', 404)
+    }
+
+    const candidateUser = await this.userService.user({
+      username: username
+    });
+
+    if (candidateUser) throw new HttpException('User with such username already exists', 400);
+
+    const updated = await this.prisma.userDetails.update({
+      where: { id },
+      data: {
+        avatar: {
+          connect: {
+            id: avatar_id
+          }
+        },
+        first_name,
+        middle_name,
+        last_name,
+        birthdate,
+        city,
+        username,
+      },
+      include: {
+        avatar: true,
+      }
+    });
+    
+    return {
+      id: updated.id,
+      first_name: updated.first_name,
+      middle_name: updated.middle_name,
+      last_name: updated.last_name,
+      birthdate: updated.birthdate,
+      city: updated.city,
+      avatar_id: updated.avatar_id,
+      avatar: { ...updated.avatar },
+      account_id: updated.account_id,
+      created_at: updated.created_at,
+      company_id: updated.company_id,
+      username,
+    }
   }
 
   @ApiOkResponse({
