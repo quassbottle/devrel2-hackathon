@@ -99,6 +99,8 @@ model UserDetails {
 
   avatar Image? @relation(fields: [avatar_id], references: [id])
   avatar_id Int? @unique
+
+  requests EventJoin[]
 }
 
 model CompanyDetails {
@@ -166,4 +168,19 @@ model Event {
   participants UserDetails[] @relation(name: "participates")
 
   saved_by UserDetails[]
+
+  requests EventJoin[]
+}
+
+model EventJoin {
+  id Int @id @default(autoincrement())
+
+  created_at DateTime @default(now())
+  status ModerationStatus @default(todo)
+
+  user UserDetails @relation(fields: [user_id], references: [id])
+  user_id Int
+
+  event Event @relation(fields: [event_id], references: [id])
+  event_id Int
 }

@@ -281,7 +281,7 @@ export class CompanyController {
     name: 'id',
     type: Number,
   })
-  @Post('status/:id')
+  @Post(':id/status')
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(Role.Admin, Role.Moderator)
   async changeStatus(@Param('id', ParseIntPipe) id, @Req() req, @Body() statusDto: CompanyChangeStatusDto) : Promise<CompanyDetails> {

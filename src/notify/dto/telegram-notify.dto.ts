@@ -5,4 +5,8 @@ export class NotifyTelegramDto {
   @ApiProperty()
   @IsNotEmpty()
   message: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  token: string;
 }

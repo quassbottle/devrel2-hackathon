@@ -34,6 +34,21 @@ export class UserController {
   }
 
   @ApiOkResponse({
+    type: CompanyModel,
+    isArray: true
+  })
+  @UseGuards(AuthGuard)
+  @Get('me/requests')
+  async getRequests(@Req() req) : Promise<CompanyModel[]> {
+    const id = req.user.sub;
+
+    const candidate = await this.accountService.account({ id }, { user: true });
+    const subs = await this.userService.user({ id: candidate.user.id }, { subscribed_to: { include: { avatar: true }} });
+
+    return subs.subscribed_to;
+  }
+
+  @ApiOkResponse({
     type: UserModel
   })
   @UseGuards(AuthGuard)
