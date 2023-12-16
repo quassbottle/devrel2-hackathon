@@ -84,7 +84,7 @@ export class UserController {
   @UseGuards(AuthGuard)
   @Put(':id')
   async update(@Param('id', ParseIntPipe) id, @Body() dto: UserUpdateDto, @Req() req) : Promise<UserModel> {
-    const res = await this.prisma.companyDetails.findFirst({ where: { id }});
+    const res = await this.prisma.userDetails.findFirst({ where: { id }});
 
     if (res.account_id !== req.user.sub && req.user.role != 'admin') {
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
