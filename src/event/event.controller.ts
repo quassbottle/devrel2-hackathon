@@ -216,4 +216,103 @@ export class EventController {
 
     return res;
   }
+
+  @ApiParam({
+    type: Number,
+    name: 'id'
+  })
+  @ApiOkResponse({
+    type: EventModel
+  })
+  @UseGuards(AuthGuard)
+  @Get(':id/unfavorite')
+  async unfavorite(@Param('id', ParseIntPipe) id, @Req() req) {
+    const candidate = await this.eventService.event({ id });
+    
+    if (candidate == null) {
+      throw new HttpException('Event not found', 404);
+    }
+
+    if ((await this.eventService.events({
+      where: {
+        id: id,
+        saved_by: {
+          some: {
+            id: req.user.sub
+          }
+        }
+      }
+    })).length == 0) throw new HttpException('This event is not favorite', 400); 
+
+    const res = await this.eventService.update({
+      where: { id },
+      data: {
+        saved_by: {
+          disconnect: {
+            id: req.user.sub
+          }
+        }
+      },
+      include: {
+        saved_by: {
+          include: {
+            avatar: true
+          }
+        }
+      }
+    });
+
+    return res;
+  }
+
+  @ApiParam({
+    type: Number,
+    name: 'id'
+  })
+  @ApiOkResponse({
+    type: EventModel
+  })
+  @UseGuards(AuthGuard)
+  @Get(':id/favorite')
+  async favorite(@Param('id', ParseIntPipe) id, @Req() req) {
+    const candidate = await this.eventService.event({ id });
+    
+    if (candidate == null) {
+      throw new HttpException('Event not found', 404);
+    }
+1
+    const check = await this.eventService.events({
+      where: {
+        id: id,
+        saved_by: {
+          some: {
+            id: req.user.sub
+          }
+        }
+      }
+    });
+
+
+    if (check.length > 0) throw new HttpException('This event is already favorite', 400); 
+
+    const res = await this.eventService.update({
+      where: { id },
+      data: {
+        saved_by: {
+          connect: {
+            id: req.user.sub
+          }
+        }
+      },
+      include: {
+        saved_by: {
+          include: {
+            avatar: true
+          }
+        }
+      }
+    });
+
+    return res;
+  }
 }

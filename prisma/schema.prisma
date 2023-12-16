@@ -91,7 +91,9 @@ model UserDetails {
   
   subscribed_to CompanyDetails[]
 
-  events Event[]
+  events Event[] @relation(name: "participates")
+
+  saved_events Event[]
 
   tags UserTag[]
 
@@ -159,5 +161,7 @@ model Event {
   banner_id Int? @unique
 
   tags         EventTag[]
-  participants UserDetails[]
+  participants UserDetails[] @relation(name: "participates")
+
+  saved_by UserDetails[]
 }
