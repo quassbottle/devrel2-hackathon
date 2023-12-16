@@ -2,16 +2,17 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { CreateAnalyticsDto } from './dto/create-analytics.dto';
 import { UpdateAnalyticsDto } from './dto/update-analytics.dto';
 import { HttpService } from '@nestjs/axios';
+import axios from 'axios';
 
 @Controller('analytics')
 export class AnalyticsController {
   constructor(private readonly httpService: HttpService) {}
 
-  private readonly host = '127.0.0.1:1488/';
+  private readonly host = 'http://ml-api:1488/';
   
   @Get('tags/all/stat')
   async getTags() {
-    return this.httpService.get(this.host + 'tags/all/stat');
+    return axios.get(this.host + 'tags/all/stat');
   }
 
   // fetchData(): Observable<AxiosResponse<any>> {
