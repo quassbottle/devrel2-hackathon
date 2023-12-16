@@ -36,7 +36,7 @@ export class CompanyController {
   @Post(':id/unsubscribe')
   async unsubscribe(@Req() req, @Param('id', ParseIntPipe) id) {
     const res = await this.companyService.company({
-      account_id: req.user.sub
+      id
     });
 
     if (res == null) {
@@ -71,7 +71,7 @@ export class CompanyController {
   @Post(':id/subscribe')
   async subscribe(@Req() req, @Param('id', ParseIntPipe) id) {
     const res = await this.companyService.company({
-      account_id: req.user.sub
+      id
     });
 
     if (res == null) {

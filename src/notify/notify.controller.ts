@@ -13,6 +13,7 @@ export class NotifyController {
   })
   @Post('telegram')
   async notifyTelegram(@Body() dto: NotifyTelegramDto) {
-    return (await axios.post('http://provider-service:666/tg/send', { ...dto })).data;
+    const res = await axios.post('http://provider-service:666/tg/send', { ...dto });
+    return res.data;
   }
 }
