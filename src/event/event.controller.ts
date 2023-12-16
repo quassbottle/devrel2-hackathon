@@ -87,14 +87,17 @@ export class EventController {
     type: Number,
     name: 'id'
   })
-  @UseGuards(AuthGuard, RoleGuard)
+  @UseGuards(AuthGuard)
   @Post(':id/update-status')
-  @Roles(Role.Admin, Role.Moderator)
   async updateStatus(@Param('id', ParseIntPipe) id, @Req() req, @Body() dto: EventChangeStatusDto) : Promise<EventModel> {
     const candidate = await this.eventService.event({ id });
     
     if (candidate == null) {
       throw new HttpException('Event not found', 404);
+    }
+
+    if (candidate.company_id != id) {
+      throw new HttpException('Event is not yours', HttpStatus.UNAUTHORIZED);
     }
 
     const res = await this.eventService.update({
