@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Body, Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import axios from 'axios';
 import { NotifyTelegramDto } from './dto/telegram-notify.dto';
 import { ApiBody } from '@nestjs/swagger';
@@ -11,7 +11,7 @@ export class NotifyController {
   @ApiBody({
     type: NotifyTelegramDto
   })
-  @Get('telegram')
+  @Post('telegram')
   async notifyTelegram(@Body() dto: NotifyTelegramDto) {
     return (await axios.post('http://provider-service:666/tg/send', { ...dto })).data;
   }
