@@ -38,10 +38,6 @@ export class NotifyController {
   @ApiBody({
     type: EmailNotifyDto
   })
-  @ApiParam({
-    type: Number,
-    name: 'id'
-  })
   @Post('mail')
   async notifyEmail(@Body() dto: EmailNotifyDto) {
     // const company = await this.prisma.companyDetails.findFirst({ where: { id }, include: { account: true }})
