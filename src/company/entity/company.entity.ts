@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { $Enums, CompanyDetails } from "@prisma/client";
-import { ImageModel } from "./image.entity";
+import { ImageModel } from "../../storage/entity/image.entity";
 
 export class CompanyModel implements CompanyDetails {
   @ApiProperty()

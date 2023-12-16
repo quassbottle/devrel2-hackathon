@@ -59,7 +59,7 @@ export class StorageService {
         title: hashedName,
         type: file.mimetype,
         size: file.size,
-        url: 'http://' + this.bucket + '.' + process.env.S3_ENDPOINT_URL + '/' + file.originalname,
+        url: 'http://' + this.bucket + '.' + process.env.S3_ENDPOINT_URL + '/' + hashedName,
       }
     });
 
@@ -69,7 +69,7 @@ export class StorageService {
       type: db.type,
       title: db.title,
       uploaded: true,
-      url: 'http://' + this.bucket + '.' + process.env.S3_ENDPOINT_URL + '/' + file.originalname,
+      url: db.url,
     }
   }
 

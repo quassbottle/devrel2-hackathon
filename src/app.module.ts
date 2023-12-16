@@ -10,6 +10,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { StorageService } from './storage/storage.service';
 import { StorageModule } from './storage/storage.module';
+import { EventModule } from './event/event.module';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { StorageModule } from './storage/storage.module';
       rootPath: join(__dirname,'swagger'),
       serveStaticOptions: {}
     }),
-    StorageModule
+    StorageModule,
+    EventModule
   ],
   controllers: [AppController],
   providers: [AppService, StorageService],

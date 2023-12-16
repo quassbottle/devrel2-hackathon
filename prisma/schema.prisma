@@ -21,6 +21,7 @@ model Image {
 
   company CompanyDetails?
   user UserDetails?
+  event Event?
 }
 
 enum Role {
@@ -144,6 +145,9 @@ model Event {
 
   company CompanyDetails @relation(references: [id], fields: [company_id])
   company_id Int
+
+  banner Image? @relation(references: [id], fields: [banner_id])
+  banner_id Int? @unique
 
   tags         EventTag[]
   participants UserDetails[]
