@@ -18,6 +18,7 @@ import { EventJoinModel } from './entities/event-join-request.entity';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EventJoinStatusDto } from './dto/change-join-status.dto';
 import { ModerationStatus } from '@prisma/client';
+import { NotifyService } from 'src/notify/notify.service';
 
 @ApiBearerAuth('JWT-auth')
 @ApiTags('event')
@@ -27,7 +28,8 @@ export class EventController {
               private readonly storageService: StorageService,
               private readonly companyService: CompanyService,
               private readonly userService: UserService,
-              private readonly prismaService: PrismaService) {}
+              private readonly prismaService: PrismaService,
+              private readonly notifyService: NotifyService) {}
   
   @ApiParam({
     type: Number,
@@ -95,7 +97,7 @@ export class EventController {
       throw new HttpException('Event not found', 404);
     }
 
-    return this.eventService.update({
+    const res = await this.eventService.update({
       where: { id },
       data: {
         status: dto.status
@@ -104,6 +106,37 @@ export class EventController {
         banner: true
       }
     });
+
+    const host = await this.prismaService.companyDetails.findFirst({ where: { id: res.company_id}, include: { account: true } })
+
+    if (host.notifications_tg_bot != null) {
+      switch (res.status) {
+        case 'running': {
+          this.notifyService.notifyTelegram(host.id, {
+            message: `Событие ${res.title} началось!`,
+            token: host.notifications_tg_bot
+          });
+          this.notifyService.notifyEmail(host.id, {
+            message: `Событие ${res.title} началось!`,
+            producer_mail: host.account.email
+          });
+          break;
+        }
+        case 'completed': {
+          this.notifyService.notifyTelegram(host.id, {
+            message: `Событие ${res.title} завершилось!`,
+            token: host.notifications_tg_bot
+          });
+          this.notifyService.notifyEmail(host.id, {
+            message: `Событие ${res.title} завершилось!`,
+            producer_mail: host.account.email
+          });
+          break;
+        }
+      }
+    }
+
+    return res;
   }
   
   @ApiOkResponse({
@@ -144,6 +177,19 @@ export class EventController {
         }
       }
     })
+
+    const host = await this.prismaService.companyDetails.findFirst({ where: { id: event.company_id}, include: { account: true } })
+
+    if (host.notifications_tg_bot != null) {
+      this.notifyService.notifyTelegram(host.id, {
+        message: `Событие ${event.title} появилось!`,
+        token: host.notifications_tg_bot
+      });
+      this.notifyService.notifyEmail(host.id, {
+        message: `Событие ${event.title} появилось!`,
+        producer_mail: host.account.email
+      });
+    }
 
     return {
       ...event, banner
