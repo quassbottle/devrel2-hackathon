@@ -8,11 +8,12 @@ import axios from 'axios';
 export class AnalyticsController {
   constructor(private readonly httpService: HttpService) {}
 
-  private readonly host = 'http://ml-api:1488/';
+  private readonly host = 'http://ml-api:1488/tags/all/stat';
   
   @Get('tags/all/stat')
   async getTags() {
-    return axios.get(this.host + 'tags/all/stat');
+    console.log(this.host);
+    return axios.get(this.host);
   }
 
   // fetchData(): Observable<AxiosResponse<any>> {
