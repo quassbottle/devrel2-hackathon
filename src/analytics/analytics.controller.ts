@@ -7,8 +7,6 @@ import { AnalyticsRecommendTagsDto } from './dto/recommend-tags.dto';
 @Controller('analytics')
 export class AnalyticsController {
   constructor(private readonly httpService: HttpService) {}
-
-  private readonly host = 'http://ml-api:1488/tags/all/stat';
   
   @Get('tags/all/stat')
   async getTags() {

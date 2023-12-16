@@ -13,6 +13,7 @@ import { StorageModule } from './storage/storage.module';
 import { EventModule } from './event/event.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { NotifyModule } from './notify/notify.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     StorageModule,
     EventModule,
     AnalyticsModule,
+    NotifyModule,
   ],
   controllers: [AppController],
   providers: [AppService, StorageService],
