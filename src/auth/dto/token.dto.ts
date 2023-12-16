@@ -3,6 +3,9 @@ import { UserDetails } from "@prisma/client";
 
 export class TokenDto implements UserDetails {
   @ApiProperty()
+  telegram: string;
+  
+  @ApiProperty()
   github_url: string;
   
   @ApiProperty()

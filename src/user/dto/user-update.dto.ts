@@ -25,4 +25,7 @@ export class UserUpdateDto {
 
   @ApiProperty()
   github_url: string;
+
+  @ApiProperty()
+  telegram: string;
 }

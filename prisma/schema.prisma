@@ -103,6 +103,7 @@ model UserDetails {
   requests EventJoin[]
 
   github_url String?
+  telegram String?
 }
 
 model CompanyDetails {
