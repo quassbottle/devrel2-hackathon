@@ -5,6 +5,8 @@ import { UserModel } from './entities/user.entity';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { AccountService } from 'src/account/account.service';
 import { StorageService } from 'src/storage/storage.service';
+import { CompanyModel } from 'src/company/entity/company.entity';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @ApiTags('user')
 @Controller('user')
@@ -12,7 +14,23 @@ import { StorageService } from 'src/storage/storage.service';
 export class UserController {
   constructor(private readonly userService: UserService,
               private readonly accountService: AccountService,
-              private readonly storageService: StorageService) {}
+              private readonly storageService: StorageService,
+              private readonly prisma: PrismaService) {}
+
+  @ApiOkResponse({
+    type: CompanyModel,
+    isArray: true
+  })
+  @UseGuards(AuthGuard)
+  @Get('me/subscriptions')
+  async getSubscriptions(@Req() req) : Promise<CompanyModel[]> {
+    const id = req.user.sub;
+
+    const candidate = await this.accountService.account({ id }, { user: true });
+    const subs = await this.userService.user({ id: candidate.user.id }, { subscribed_to: { include: { avatar: true }} });
+
+    return subs.subscribed_to;
+  }
 
   @ApiOkResponse({
     type: UserModel

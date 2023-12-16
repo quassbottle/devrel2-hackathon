@@ -14,7 +14,7 @@ export class UserService {
     });
   }
 
-  async user(where: Prisma.UserDetailsWhereUniqueInput, include?: Prisma.UserDetailsInclude) {
+  async user(where: Prisma.UserDetailsWhereUniqueInput, include?: Prisma.UserDetailsInclude) : Promise<any> {
     return this.prisma.userDetails.findUnique({
       where: where,
       include: include
