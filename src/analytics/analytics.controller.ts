@@ -1,6 +1,4 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
-import { CreateAnalyticsDto } from './dto/create-analytics.dto';
-import { UpdateAnalyticsDto } from './dto/update-analytics.dto';
 import { HttpService } from '@nestjs/axios';
 import axios from 'axios';
 import { ApiBody, ApiParam } from '@nestjs/swagger';
