@@ -1,7 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { UserDetails } from "@prisma/client";
+import { ImageModel } from "src/storage/entity/image.entity";
 
 export class UserModel implements UserDetails {
+  @ApiProperty()
+  avatar: ImageModel;
+
   @ApiProperty()
   avatar_id: number;
   

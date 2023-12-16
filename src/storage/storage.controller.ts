@@ -40,24 +40,24 @@ export class StorageController {
     return this.storageService.uploadFile(file);
   }
 
-  // @ApiOkResponse({
-  //   type: FileUploadedDto
-  // })
-  // @ApiParam({
-  //   name: 'id',
-  //   type: Number,
-  // })
-  // @ApiResponse({
-  //   type: String,
-  // })
-  // @Get(':id')
-  // async getLink(@Param('id', ParseIntPipe) id) {
-  //   const candidate = await this.storageService.file({ id });
+  @ApiOkResponse({
+    type: FileUploadedDto
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+  })
+  @ApiResponse({
+    type: String,
+  })
+  @Get(':id')
+  async getLink(@Param('id', ParseIntPipe) id) {
+    const candidate = await this.storageService.file({ id });
 
-  //   if (candidate == null) {
-  //     throw new HttpException('File not found', 404);
-  //   }
+    if (candidate == null) {
+      throw new HttpException('File not found', 404);
+    }
 
-  //   return candidate.url;
-  // }
+    return candidate.url;
+  }
 }

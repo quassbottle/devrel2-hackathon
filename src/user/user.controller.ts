@@ -4,25 +4,29 @@ import { ApiBearerAuth, ApiOkResponse, ApiParam, ApiQuery, ApiTags } from '@nest
 import { UserModel } from './entities/user.entity';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { AccountService } from 'src/account/account.service';
+import { StorageService } from 'src/storage/storage.service';
+import { ImageModel } from 'src/storage/entity/image.entity';
 
 @ApiTags('user')
 @Controller('user')
 @ApiBearerAuth('JWT-auth')
 export class UserController {
   constructor(private readonly userService: UserService,
-              private readonly accountService: AccountService) {}
+              private readonly accountService: AccountService,
+              private readonly storageService: StorageService) {}
 
   @ApiOkResponse({
     type: UserModel
   })
   @UseGuards(AuthGuard)
   @Get('me')
-  async getMe(@Req() req) {
+  async getMe(@Req() req) : Promise<UserModel> {
     const id = req.user.sub;
 
-    const candidate = await this.accountService.account({ id }, {user: true})
+    const candidate = await this.accountService.account({ id }, { user: true });
+    const avatar = candidate.user.avatar_id != null ? await this.storageService.file({ id: candidate.user.avatar_id }) : null;
 
-    return candidate.user;
+    return { ...candidate.user, avatar };
   }
 
   @ApiOkResponse({
@@ -33,8 +37,8 @@ export class UserController {
     type: Number,
   })
   @Get(':id')
-  async getById(@Param('id') id) {
-    return this.userService.user({ id: id })
+  async getById(@Param('id', ParseIntPipe) id) {
+    return this.userService.user({ id: id }, { avatar: true })
   }
 
   @ApiOkResponse({
@@ -47,7 +51,7 @@ export class UserController {
   // })
   @Get()
   async getAll() {
-    return this.userService.users({});
+    return this.userService.users({ include: { avatar: true }});
   }
   // async getAll(@Query('page', ParseIntPipe) page) {
   //   page = Math.max(1, page);

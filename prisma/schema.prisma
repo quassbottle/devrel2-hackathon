@@ -37,6 +37,7 @@ enum ModerationStatus {
 }
 
 enum EventStatus {
+  not_started
   in_progress
   running
   completed
@@ -142,6 +143,14 @@ model Event {
 
   title String
   description String
+
+  starts_at DateTime
+  ends_at DateTime?
+
+  status EventStatus @default(not_started)
+  
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   company CompanyDetails @relation(references: [id], fields: [company_id])
   company_id Int

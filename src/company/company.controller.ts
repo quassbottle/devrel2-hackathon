@@ -345,7 +345,7 @@ export class CompanyController {
 
     const avatar = await this.storageService.file({ id: res.company.avatar_id });
 
-    return { ...res.company, avatar: avatar };
+    return { ...res.company, avatar };
   }
 
   @ApiOkResponse({
