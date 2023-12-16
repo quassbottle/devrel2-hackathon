@@ -22,4 +22,7 @@ export class UserUpdateDto {
 
   @ApiProperty()
   birthdate: Date;
+
+  @ApiProperty()
+  github_url: string;
 }

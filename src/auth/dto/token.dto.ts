@@ -3,6 +3,9 @@ import { UserDetails } from "@prisma/client";
 
 export class TokenDto implements UserDetails {
   @ApiProperty()
+  github_url: string;
+  
+  @ApiProperty()
   avatar_id: number;
   
   @ApiProperty()

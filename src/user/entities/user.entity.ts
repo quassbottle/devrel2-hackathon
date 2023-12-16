@@ -4,6 +4,9 @@ import { ImageModel } from "src/storage/entity/image.entity";
 
 export class UserModel implements UserDetails {
   @ApiProperty()
+  github_url: string;
+
+  @ApiProperty()
   avatar: ImageModel;
 
   @ApiProperty()

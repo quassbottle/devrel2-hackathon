@@ -101,6 +101,8 @@ model UserDetails {
   avatar_id Int? @unique
 
   requests EventJoin[]
+
+  github_url String?
 }
 
 model CompanyDetails {

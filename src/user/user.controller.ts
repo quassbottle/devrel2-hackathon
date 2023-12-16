@@ -90,7 +90,7 @@ export class UserController {
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
     }
 
-    const { first_name, last_name, middle_name, birthdate, avatar_id, city, username } = dto;
+    const { first_name, last_name, middle_name, birthdate, avatar_id, city, username, github_url } = dto;
     
     if (res == null) {
       throw new HttpException('User not found', 404)
@@ -135,6 +135,7 @@ export class UserController {
       created_at: updated.created_at,
       company_id: updated.company_id,
       username,
+      github_url
     }
   }
 
