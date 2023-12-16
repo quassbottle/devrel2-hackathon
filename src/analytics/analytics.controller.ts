@@ -8,7 +8,7 @@ import axios from 'axios';
 export class AnalyticsController {
   constructor(private readonly httpService: HttpService) {}
 
-  private readonly host = 'http://ml-api/tags/all/stat';
+  private readonly host = 'http://ml-api:1488/tags/all/stat';
   
   @Get('tags/all/stat')
   async getTags() {
