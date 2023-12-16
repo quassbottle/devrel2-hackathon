@@ -7,8 +7,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  //url      = env("SHADOW_DATABASE_URL")
-  url      = env("DATABASE_URL") 
+  url      = env("SHADOW_DATABASE_URL")
+  //url      = env("DATABASE_URL") 
 }
 
 model Image {
@@ -152,7 +152,7 @@ model Event {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  company CompanyDetails @relation(references: [id], fields: [company_id])
+  company CompanyDetails @relation(references: [id], fields: [company_id], onDelete: Cascade, onUpdate: Cascade)
   company_id Int
 
   banner Image? @relation(references: [id], fields: [banner_id])

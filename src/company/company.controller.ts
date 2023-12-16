@@ -42,6 +42,17 @@ export class CompanyController {
     if (res == null) {
       throw new HttpException('Company not found', 404)
     }
+
+    if ((await this.companyService.companies({
+      where: {
+        id: id,
+        subscribers: {
+          some: {
+            id: req.user.sub
+          }
+        }
+      }
+    })).length == 0) throw new HttpException('You are not subscribed to this company', 400); 
     
     const subscribe = await this.userService.update({
       where: { id: req.user.sub },
@@ -51,13 +62,10 @@ export class CompanyController {
             id
           }
         }
-      },
-      include: {
-        company: true
-      },
+      }
     });
 
-    return subscribe.company;
+    return this.companyService.company({ id });
   }
 
   @ApiOkResponse({
@@ -77,6 +85,17 @@ export class CompanyController {
     if (res == null) {
       throw new HttpException('Company not found', 404)
     }
+
+    if ((await this.companyService.companies({
+      where: {
+        id: id,
+        subscribers: {
+          some: {
+            id: req.user.sub
+          }
+        }
+      }
+    })).length > 0) throw new HttpException('You are already subscribed to this company', 400); 
     
     const subscribe = await this.userService.update({
       where: { id: req.user.sub },
@@ -86,13 +105,10 @@ export class CompanyController {
             id
           }
         }
-      },
-      include: {
-        company: true
-      },
+      }
     });
 
-    return subscribe.company;
+    return this.companyService.company({ id });
   }
 
   // @ApiOkResponse({
