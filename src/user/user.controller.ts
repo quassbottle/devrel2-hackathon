@@ -8,6 +8,7 @@ import { StorageService } from 'src/storage/storage.service';
 import { CompanyModel } from 'src/company/entity/company.entity';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserUpdateDto } from './dto/user-update.dto';
+import { EventModel } from 'src/event/entities/event.entity';
 
 @ApiTags('user')
 @Controller('user')
@@ -31,6 +32,21 @@ export class UserController {
     const subs = await this.userService.user({ id: candidate.user.id }, { subscribed_to: { include: { avatar: true }} });
 
     return subs.subscribed_to;
+  }
+
+  @ApiOkResponse({
+    type: EventModel,
+    isArray: true
+  })
+  @UseGuards(AuthGuard)
+  @Get('me/favorite')
+  async getFavorite(@Req() req) : Promise<EventModel[]> {
+    const id = req.user.sub;
+
+    const candidate = await this.accountService.account({ id }, { user: true });
+    const subs = await this.userService.user({ id: candidate.user.id }, { saved_events: { include: { banner: true }} });
+
+    return subs.saved_events;
   }
 
   @ApiOkResponse({
