@@ -1,12 +1,19 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { Account } from "@prisma/client";
 
 export class TokenPayloadModel {
   @ApiProperty()
-  id: Number;
+  id: number;
 
   @ApiProperty()
-  email: String;
+  email: string;
 
   @ApiProperty()
-  role: String;
+  role: string;
+
+  @ApiProperty()
+  user_id: number;
+
+  @ApiProperty()
+  company_id: number;
 }
