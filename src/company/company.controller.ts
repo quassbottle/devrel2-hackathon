@@ -231,7 +231,7 @@ export class CompanyController {
   })
   @Get(':id')
   async get(@Param('id', ParseIntPipe) id) {
-    const res =  this.prisma.companyDetails.findMany({
+    const res =  await this.prisma.companyDetails.findMany({
       select: {
         title: true,
         description: true,
@@ -248,7 +248,7 @@ export class CompanyController {
       throw new HttpException('Company not found', 404)
     }
 
-    return res;
+    return res[0];
   }
 
   @ApiOkResponse({
